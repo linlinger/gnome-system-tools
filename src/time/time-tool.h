@@ -41,7 +41,7 @@ struct _GstTimeTool {
 	GtkWidget *timezone_dialog;
 	GtkWidget *map_hover_label;
 
-	OobsService *ntp_service;
+	OobsService *ntpd_service;
 };
 
 struct _GstTimeToolClass {

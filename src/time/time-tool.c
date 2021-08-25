@@ -90,7 +90,7 @@ gst_time_tool_class_init (GstTimeToolClass *class)
 }
 
 static void
-get_ntp_service (GstTimeTool *tool)
+get_ntpd_service (GstTimeTool *tool)
 {
 	GObject *service;
 	OobsList *list;
@@ -106,7 +106,7 @@ get_ntp_service (GstTimeTool *tool)
 		role = gst_service_get_role (OOBS_SERVICE (service));
 
 		if (role == GST_ROLE_NTP_SERVER)
-			tool->ntp_service = g_object_ref (service);
+			tool->ntpd_service = g_object_ref (service);
 
 		g_object_unref (service);
 		valid = oobs_list_iter_next (list, &iter);
@@ -371,14 +371,14 @@ check_ntp_support (GstTool  *tool)
 	GstTimeToolPrivate *priv = GST_TIME_TOOL_GET_PRIVATE (tool);
 	GtkWidget *message, *widget;
 
-	if (GST_TIME_TOOL (tool)->ntp_service)
+	if (GST_TIME_TOOL (tool)->ntpd_service)
 		return TRUE;
 	else {
 		/* Be sure we take into account newly installed NTP support */
 		oobs_object_update (OOBS_OBJECT (GST_TIME_TOOL (tool)->services_config));
-		get_ntp_service (GST_TIME_TOOL (tool));
+		get_ntpd_service (GST_TIME_TOOL (tool));
 
-		if (GST_TIME_TOOL (tool)->ntp_service)
+		if (GST_TIME_TOOL (tool)->ntpd_service)
 			return TRUE;
 	}
 
@@ -416,12 +416,12 @@ on_option_configuration_changed (GtkWidget *widget,
 		const OobsServicesRunlevel *runlevel;
 
 		runlevel = oobs_services_config_get_default_runlevel (OOBS_SERVICES_CONFIG (time_tool->services_config));
-		oobs_service_set_runlevel_configuration (time_tool->ntp_service,
+		oobs_service_set_runlevel_configuration (time_tool->ntpd_service,
 							 (OobsServicesRunlevel *) runlevel,
 							 (active) ? OOBS_SERVICE_START : OOBS_SERVICE_STOP,
 							 0);
 
-		gst_tool_commit_async (GST_TOOL (time_tool), OOBS_OBJECT (time_tool->ntp_service),
+		gst_tool_commit_async (GST_TOOL (time_tool), OOBS_OBJECT (time_tool->ntpd_service),
 				       (active) ? _("Enabling NTP") : _("Disabling NTP"),
 				       NULL, NULL);
 	}
@@ -614,11 +614,11 @@ gst_time_tool_update_gui (GstTool *tool)
 
 	update_servers_list (GST_TIME_TOOL (tool));
 
-	if (time_tool->ntp_service) {
+	if (time_tool->ntpd_service) {
 		const OobsServicesRunlevel *runlevel;
 
 		runlevel = oobs_services_config_get_default_runlevel (OOBS_SERVICES_CONFIG (time_tool->services_config));
-		oobs_service_get_runlevel_configuration (time_tool->ntp_service, (OobsServicesRunlevel *) runlevel, &active, NULL);
+		oobs_service_get_runlevel_configuration (time_tool->ntpd_service, (OobsServicesRunlevel *) runlevel, &active, NULL);
 
 		if (active == OOBS_SERVICE_START)
 			option = CONFIGURATION_AUTOMATIC;
@@ -632,7 +632,7 @@ gst_time_tool_update_gui (GstTool *tool)
 static void
 gst_time_tool_update_config (GstTool *tool)
 {
-	get_ntp_service (GST_TIME_TOOL (tool));
+	get_ntpd_service (GST_TIME_TOOL (tool));
 }
 
 static void
